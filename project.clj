@@ -18,12 +18,11 @@
                  [environ "1.1.0"]
                  [ch.qos.logback/logback-classic "1.1.7"]]
 
-  :plugins [[lein-ring "0.9.7"]]
+  :uberjar-name "ordnerd.jar"
+  :main ordnerd.core
 
-  :ring {:handler ordnerd.handler/app}
-
-  :profiles
-  {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.3.0"]
-                        [org.clojure/tools.nrepl "0.2.12"]
-                        [cljfmt "0.5.7"]]}})
+  :profiles {:dev     {:dependencies [[javax.servlet/servlet-api "2.5"]
+                                      [ring/ring-mock "0.3.0"]
+                                      [org.clojure/tools.nrepl "0.2.12"]
+                                      [cljfmt "0.5.7"]]}
+             :uberjar {:aot :all}})
