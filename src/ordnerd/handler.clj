@@ -17,20 +17,21 @@
   (or (env :token) "NOT-SET"))
 
 (defn telegram-send-message
-  [username text]
-  (let
-    [chat-id (str "@" username)
-     url-encoded-text (util/url-encode text)]
-    (->
-      "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&parse_mode=Markdown&text=%s"
-      (format token chat-id url-encoded-text)
-      (client/get {:throw-exceptions true}))))
+  [chat-id text]
+  (if-not (some? chat-id)
+    (println "UNKNOWN CHAT ID")
+    (let
+      [url-encoded-text (util/url-encode text)]
+      (->
+        "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&parse_mode=Markdown&text=%s"
+        (format token chat-id url-encoded-text)
+        (client/get {:throw-exceptions true})))))
 
 (defn telegram-answer-dont-know
-  [username query]
+  [chat-id query]
   (let
     [text (str "Jag tyvärr känner inte till det ordet: *" query "*")]
-    (telegram-send-message username text)))
+    (telegram-send-message chat-id text)))
 
 (defn word->markdown
   [word]
@@ -42,15 +43,15 @@
     (str \newline "*" form "*" \newline \newline "_" definition "_")))
 
 (defn telegram-answer-word
-  [username text]
-  (telegram-send-message username text))
+  [chat-id text]
+  (telegram-send-message chat-id text))
 
 (defn webhook-endpoint
   [update-json-str]
   (let
     [update (parse-string update-json-str true)
      message-id (get-in update [:message :message-id])
-     username (get-in update [:message :chat :username])
+     chat-id (get-in update [:message :chat :id])
      message-text (get-in update [:message :text])
      query (->
              message-text
@@ -67,8 +68,8 @@
     (println "INCOMING UPDATE" "-->")
     (pprint update)
     (if word-found?
-      (telegram-answer-word username answer-message-text)
-      (telegram-answer-dont-know username query))
+      (telegram-answer-word chat-id answer-message-text)
+      (telegram-answer-dont-know chat-id query))
     {:status  202
      :headers {"Content-Type" "application/json; charset=utf-8"}}))
 

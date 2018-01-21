@@ -25,7 +25,7 @@
 
   (with-redefs-fn
 
-    ;{#'ordnerd.handler/telegram-send-message (fn [username text] (println "SENDING TO TELEGRAM:" username "|" text) {:status 200})}
+    ;{#'ordnerd.handler/telegram-send-message (fn [chat-id text] (println "SENDING TO TELEGRAM:" chat-id "|" text) {:status 200})}
     {#'clj-http.client/get (fn [url & [req]] (println "SENDING TO TELEGRAM:" url) {:status 200})}
 
     #(do
