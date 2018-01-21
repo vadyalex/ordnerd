@@ -21,7 +21,7 @@
      message-id (get-in update [:message :message-id])
      message-text (get-in update [:message :text])
      word (.toLowerCase (or message-text ""))
-     words (swe/find-words word)
+     words (swe/find-words word)]
      ;answer-message-text (words->message words)]
     (println "INCOMING UPDATE" "-->")
     (pprint update)
