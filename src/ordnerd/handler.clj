@@ -6,7 +6,9 @@
             [cheshire.core :refer :all]
             [environ.core :refer [env]]
             [clojure.pprint :refer [pprint]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clj-http.client :as client]
+            [clj-http.util :as util]))
 
 (def webhook-uid
   (or (env :webhook) "WEBHOOK"))
@@ -14,20 +16,59 @@
 (def token
   (or (env :token) "NOT-SET"))
 
+(defn telegram-send-message
+  [username text]
+  (let
+    [chat-id (str "@" username)
+     url-encoded-text (util/url-encode text)]
+    (->
+      "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&parse_mode=Markdown&text=%s"
+      (format token chat-id url-encoded-text)
+      (client/get {:throw-exceptions true}))))
+
+(defn telegram-answer-dont-know
+  [username query]
+  (let
+    [text (str "Jag tyvärr känner inte till det ordet: *" query "*")]
+    (telegram-send-message username text)))
+
+(defn word->markdown
+  [word]
+  (let
+    [form (:form word)
+     definition_1 (get-in word [:lexeme :definition])
+     definition_2 (get-in word [:lexeme 0 :definition])
+     definition (or definition_1 definition_2)]
+    (str \newline "*" form "*" \newline \newline "_" definition "_")))
+
+(defn telegram-answer-word
+  [username text]
+  (telegram-send-message username text))
+
 (defn webhook-endpoint
   [update-json-str]
   (let
-    [update (parse-string update-json-str)
+    [update (parse-string update-json-str true)
      message-id (get-in update [:message :message-id])
+     username (get-in update [:message :chat :username])
      message-text (get-in update [:message :text])
-     word (.toLowerCase (or message-text ""))
-     words (swe/find-words word)]
-     ;answer-message-text (words->message words)]
+     query (->
+             message-text
+             (or "")
+             (.toLowerCase)
+             (str/split #" ")
+             (first))
+     word (->
+            query
+            (swe/find-words)
+            (first))
+     word-found? (some? word)
+     answer-message-text (word->markdown word)]
     (println "INCOMING UPDATE" "-->")
     (pprint update)
-    ;(if (empty? words)
-    ; (telegram-answer-dont-know message-id)
-    ;  (telegram-answer-word message-id answer-message-text))
+    (if word-found?
+      (telegram-answer-word username answer-message-text)
+      (telegram-answer-dont-know username query))
     {:status  202
      :headers {"Content-Type" "application/json; charset=utf-8"}}))
 
