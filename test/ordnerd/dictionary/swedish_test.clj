@@ -18,5 +18,5 @@
       (is (= 1 (count result)))
       (pprint result)
       (is (= (get-in result [0 :form]) "ord"))
-      (is (= (get-in result [0 :lexeme :definition]) "minsta självständige språkliga enhet"))))
+      (is (= (get-in result [0 :lexeme 0 :definition]) "minsta självständige språkliga enhet"))))
   )
