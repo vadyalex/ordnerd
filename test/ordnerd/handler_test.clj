@@ -20,4 +20,17 @@
 
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
-      (is (= (:status response) 404)))))
+      (is (= (:status response) 404))))
+
+  (testing "Telegram webhook update"
+    (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
+                      (mock/json-body {:message {:message-id "123" :text "/ord ord"}}))
+          response (app request)]
+      (is (= (:status response) 202))))
+
+  (testing "Telegram webhook - empty update"
+    (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
+                      (assoc :body ""))
+          response (app request)]
+      (is (= (:status response) 202))))
+  )
