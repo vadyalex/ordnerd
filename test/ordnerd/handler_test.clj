@@ -4,10 +4,13 @@
             [ordnerd.handler :refer :all]))
 
 (deftest test-app
-  (testing "main route"
-    (let [response (app (mock/request :get "/"))]
-      (is (= (:status response) 200))
-      (is (= (:body response) "Hello World"))))
+  (testing "get word: ab"
+    (let [response (app (mock/request :get "/dictionary/swedish/ab"))]
+      (is (= (:status response) 200))))
+
+  (testing "get word: egz"
+    (let [response (app (mock/request :get "/dictionary/swedish/egz"))]
+      (is (= (:status response) 204))))
 
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
