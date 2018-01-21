@@ -7,6 +7,10 @@
 
 (defroutes app-routes
 
+           (GET "/"
+                []
+             "OK")
+
            (GET "/dictionary/swedish/:word"
                 [word]
              (let

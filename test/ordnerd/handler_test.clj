@@ -4,6 +4,12 @@
             [ordnerd.handler :refer :all]))
 
 (deftest test-app
+
+  (testing "/"
+    (let [response (app (mock/request :get "/"))]
+      (is (= (:status response) 200))
+      (is (= (:body response) "OK"))))
+
   (testing "get word: ab"
     (let [response (app (mock/request :get "/dictionary/swedish/ab"))]
       (is (= (:status response) 200))))
