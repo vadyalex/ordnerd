@@ -13,6 +13,7 @@
                  [cheshire "5.8.0"]
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.2.0"]
+                 [ring/ring-mock "0.3.2"]
                  [http-kit "2.2.0"]
                  [clj-http "3.1.0"]
                  [environ "1.1.0"]
@@ -21,8 +22,4 @@
   :uberjar-name "ordnerd.jar"
   :main ordnerd.core
 
-  :profiles {:dev     {:dependencies [[javax.servlet/servlet-api "2.5"]
-                                      [ring/ring-mock "0.3.0"]
-                                      [org.clojure/tools.nrepl "0.2.12"]
-                                      [cljfmt "0.5.7"]]}
-             :uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}})
