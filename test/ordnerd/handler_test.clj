@@ -14,6 +14,10 @@
     (let [response (app (mock/request :get "/dictionary/swedish/ab"))]
       (is (= (:status response) 200))))
 
+  (testing "get word: ordet"
+    (let [response (app (mock/request :get "/dictionary/swedish/ordet"))]
+      (is (= (:status response) 200))))
+
   (testing "get word: egz"
     (let [response (app (mock/request :get "/dictionary/swedish/egz"))]
       (is (= (:status response) 204))))
