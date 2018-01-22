@@ -61,7 +61,7 @@
              (first))
      word (->
             query
-            (swe/find-words)
+            (swe/search)
             (first))
      word-found? (some? word)
      answer-message-text (word->markdown word)]
@@ -82,7 +82,7 @@
            (GET "/dictionary/swedish/:word"
                 [word]
              (let
-               [words (swe/find-words word)]
+               [words (swe/search word)]
                (if (empty? words)
                  {:status  204
                   :headers {"Content-Type" "application/json; charset=utf-8"}}

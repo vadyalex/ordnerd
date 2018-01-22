@@ -1,30 +1,32 @@
 (ns ordnerd.dictionary.swedish
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [cheshire.core :refer :all]))
 
 (def words
-  (-> "dictionary_swedish.json"
-      (io/resource)
-      (slurp)
-      (parse-string true)))
+  (let [lines (-> "dictionary_swedish.json"
+                  (io/resource)
+                  (slurp)
+                  (str/split-lines))]
+    (->>
+      lines
+      (map #(parse-string % true)))))
 
-(defn- is-that-word?
-  [query word]
+(defn- is-inflection-contains?
+  "Check if word inflection forms contains query string ignoring case."
+  [word query]
   (let
-    [q          (-> query (or "") (.toLowerCase))
-     form       (get-in word [:form] "")
-     pure-form  (.replaceAll form "~" "")
-     inflection (get-in word [:inflection] "")]
-    (if (or (.equalsIgnoreCase form q)
-            ;(.contains inflection q)
-            )
-      word)))
+    [q (->
+         query
+         (or "")
+         (.toLowerCase))
+     inflections (get word :inflections)]
+    (some #{q} inflections)))
 
-(defn find-words
+(defn search
+  "Returns all words matching query string."
   [query]
-  (let
-    [check (fn [word] (is-that-word? query word))]
     (->>
       words
-      (filter check)
-      (into []))))
+      (filter #(is-inflection-contains? % query))
+      (into [])))
