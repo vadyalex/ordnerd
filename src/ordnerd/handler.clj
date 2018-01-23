@@ -27,29 +27,66 @@
         (format token chat-id url-encoded-text)
         (client/get {:throw-exceptions true})))))
 
-(defn telegram-answer-dont-know
-  [chat-id query]
+(defn lexeme->text
+  [lexeme]
   (let
-    [text (str "Jag tyvärr känner inte till det ordet: *" query "*")]
-    (telegram-send-message chat-id text)))
+    [definition-text (:definition lexeme)
+     usage-text (:usage lexeme)
+     example-text (if (contains? lexeme :example)
+                    (str "_" (get lexeme :examples) "_")
+                    (->>
+                      (get lexeme :examples)
+                      (filter #(not (str/blank? %)))
+                      (map #(str "_" % "_"))
+                      (str/join \newline)))]
+    (str (if (str/blank? definition-text)
+           ""
+           (str \newline
+                "Betydelse:"
+                \newline
+                "*" definition-text "*"))
+         (if (str/blank? usage-text)
+           ""
+           (str \newline
+                "Användning:"
+                \newline
+                "_" usage-text "_"))
+         (if (str/blank? example-text)
+           ""
+           (str \newline
+                "Exempel:"
+                \newline
+                example-text)))))
 
-(defn word->markdown
+(defn word->text
   [word]
   (let
-    [form (:form word)
-     definition_1 (get-in word [:lexeme :definition])
-     definition_2 (get-in word [:lexeme 0 :definition])
-     definition (or definition_1 definition_2)]
-    (str \newline "*" form "*" \newline \newline "_" definition "_")))
+    [form-text (->
+                 (:form word)
+                 (.replaceAll "~" ""))
+     inflections-text (->>
+                        (:inflections word)
+                        (str/join " "))
+     lexemes-text (->>
+                    (:lexeme word)
+                    (map lexeme->text)
+                    (str/join \newline))]
+    (str \newline
+         "*" form-text "*"
+         \newline
+         "`" inflections-text "`"
+         \newline
+         \newline
+         lexemes-text)))
 
-(defn telegram-answer-word
-  [chat-id text]
-  (telegram-send-message chat-id text))
+(defn dont-know-text
+  [query]
+  (str "Jag tyvärr känner inte till det ordet:" "*" query "*"))
 
 (defn webhook-endpoint
-  [update-json-str]
+  [update-event-json-str]
   (let
-    [update (parse-string update-json-str true)
+    [update (parse-string update-event-json-str true)
      message-id (get-in update [:message :message-id])
      chat-id (get-in update [:message :chat :id])
      message-text (get-in update [:message :text])
@@ -63,13 +100,11 @@
             query
             (swe/search)
             (first))
-     word-found? (some? word)
-     answer-message-text (word->markdown word)]
-    (println "INCOMING UPDATE" "-->")
-    (pprint update)
-    (if word-found?
-      (telegram-answer-word chat-id answer-message-text)
-      (telegram-answer-dont-know chat-id query))
+     text (if (some? word)
+            (word->text word)
+            (dont-know-text query))]
+    (println "INCOMING UPDATE" "-->" update)
+    (telegram-send-message chat-id text)
     {:status  202
      :headers {"Content-Type" "application/json; charset=utf-8"}}))
 
