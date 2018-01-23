@@ -3,6 +3,7 @@
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ordnerd.dictionary.swedish :as swe]
+            [ordnerd.markdown :as markdown]
             [cheshire.core :refer :all]
             [environ.core :refer [env]]
             [clojure.pprint :refer [pprint]]
@@ -33,24 +34,24 @@
     [definition-text (:definition lexeme)
      usage-text (:usage lexeme)
      example-text (if (contains? lexeme :example)
-                    (str "_" (get lexeme :examples) "_")
+                    (markdown/italic (get lexeme :examples))
                     (->>
                       (get lexeme :examples)
                       (filter #(not (str/blank? %)))
-                      (map #(str "_" % "_"))
+                      (map markdown/italic)
                       (str/join \newline)))]
     (str (if (str/blank? definition-text)
            ""
            (str \newline
                 "Betydelse:"
                 \newline
-                "*" definition-text "*"))
+                (markdown/bold definition-text)))
          (if (str/blank? usage-text)
            ""
            (str \newline
                 "Användning:"
                 \newline
-                "_" usage-text "_"))
+                (markdown/italic usage-text)))
          (if (str/blank? example-text)
            ""
            (str \newline
@@ -72,16 +73,16 @@
                     (map lexeme->text)
                     (str/join \newline))]
     (str \newline
-         "*" form-text "*"
+         (markdown/bold form-text)
          \newline
-         "`" inflections-text "`"
+         (markdown/fixed inflections-text)
          \newline
          \newline
          lexemes-text)))
 
 (defn dont-know-text
   [query]
-  (str "Jag tyvärr känner inte till det ordet:" "*" query "*"))
+  (str "Jag tyvärr känner inte till det ordet: " (markdown/bold query)))
 
 (defn webhook-endpoint
   [update-event-json-str]
