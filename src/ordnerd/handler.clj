@@ -1,15 +1,15 @@
 (ns ordnerd.handler
-  (:require [compojure.core :refer :all]
+  (:require [clojure.string :as str]
+            [clojure.core.async :refer [go]]
+            [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            [ordnerd.dictionary.swedish :as swe]
-            [ordnerd.markdown :as markdown]
             [cheshire.core :refer :all]
             [environ.core :refer [env]]
-            [clojure.pprint :refer [pprint]]
-            [clojure.string :as str]
             [clj-http.client :as client]
-            [clj-http.util :as util]))
+            [clj-http.util :as util]
+            [ordnerd.dictionary.swedish :as swe]
+            [ordnerd.markdown :as markdown]))
 
 (def webhook-uid
   (or (env :webhook) "WEBHOOK"))
@@ -105,9 +105,7 @@
             (word->text word)
             (dont-know-text query))]
     (println "INCOMING UPDATE" "-->" update)
-    (telegram-send-message chat-id text)
-    {:status  202
-     :headers {"Content-Type" "application/json; charset=utf-8"}}))
+    (telegram-send-message chat-id text)))
 
 (defroutes app-routes
 
@@ -131,10 +129,15 @@
 
            (POST (str "/bot/telegram/" webhook-uid)
                  {body :body}
-             (webhook-endpoint (try
-                                 ;; if body is empty slurp will explode..
-                                 (slurp body)
-                                 (catch Exception e ""))))
+             (let
+               [payload (try
+                          (slurp body)
+                          (catch Exception e nil))]
+               (if (nil? payload)
+                 {:status  400 :headers {"Content-Type" "application/json; charset=utf-8"}}
+                 (do
+                   (go (webhook-endpoint payload))
+                   {:status  202 :headers {"Content-Type" "application/json; charset=utf-8"}}))))
 
            (route/not-found "NOWHERE TO BE FOUND"))
 
