@@ -34,17 +34,19 @@
 
     #(do
 
-       (testing "Telegram webhook update"
+       (testing "Telegram webhook - update does not contain chat-id"
          (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
                            (mock/json-body {:message {:message-id "123" :text "/ord ord"}}))
                response (app request)]
+           (Thread/sleep 2000)
            (is (= (:status response) 202))))
 
        (testing "Telegram webhook - empty update"
          (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
                            (assoc :body ""))
                response (app request)]
-           (is (= (:status response) 202))))
+           (Thread/sleep 2000)
+           (is (= (:status response) 400))))
 
        (testing "Telegram webhook - unknown word"
          (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
@@ -66,6 +68,30 @@
                                                          "date"       1516570408
                                                          "text"       "egz"}}))
                response (app request)]
+           (Thread/sleep 2000)
+           (is (= (:status response) 202))))
+
+       (testing "Telegram webhook - ord"
+         (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
+                           (mock/json-body {"update_id" 123
+                                            "message"
+                                                        {"message_id" 3
+                                                         "from"
+                                                                      {"id"            986413
+                                                                       "is_bot"        false
+                                                                       "first_name"    "Bond"
+                                                                       "username"      "jamesbond"
+                                                                       "language_code" "en-US"}
+
+                                                         "chat"
+                                                                      {"id"         373734652
+                                                                       "first_name" "Bond"
+                                                                       "username"   "jamesbond"
+                                                                       "type"       "private"}
+                                                         "date"       1516570408
+                                                         "text"       "ord"}}))
+               response (app request)]
+           (Thread/sleep 2000)
            (is (= (:status response) 202))))
 
        )

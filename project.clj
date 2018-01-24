@@ -9,6 +9,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/core.async "0.4.474"]
                  [compojure "1.5.0"]
                  [cheshire "5.8.0"]
                  [ring-server "0.4.0"]

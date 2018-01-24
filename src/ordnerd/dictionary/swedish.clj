@@ -30,3 +30,43 @@
       words
       (filter #(is-inflection-contains? % query))
       (into [])))
+
+;(def load-words
+;  (let [lines (-> "dictionary_swedish.json"
+;                  (io/resource)
+;                  (slurp)
+;                  (str/split-lines))
+;        is-not-blank? (fn [s] (not (str/blank? s)))
+;        add-inflections #(let
+;                           [word %
+;                            form (->
+;                                   (get word :form "")
+;                                   (.toLowerCase))
+;                            inflection (->
+;                                         (get word :inflection "")
+;                                         (.toLowerCase))
+;                            inflections (->>
+;                                          (str/split inflection #" ")
+;                                          (filter is-not-blank?)
+;                                          (into []))
+;                            create-compound-inflections (fn [l] (let
+;                                                                  [form-parts (str/split form #"~")]
+;                                                                  (->>
+;                                                                    l
+;                                                                    (map (fn [i] (.replaceAll i "-" "")))
+;                                                                    (map (fn [i] (str (first form-parts) i)))
+;                                                                    (into []))))]
+;                           (if (.contains form "~")
+;                             (assoc word :inflections (cons (.replaceAll form "~" "") (create-compound-inflections inflections) ))
+;                             (assoc word :inflections (cons form inflections))))]
+;    (->>
+;      lines
+;      (map #(parse-string % true))
+;      (map add-inflections))))
+;
+;
+;(->>
+;  load-words
+;  (map generate-string)
+;  (str/join \newline)
+;  (spit "new-dict.json"))

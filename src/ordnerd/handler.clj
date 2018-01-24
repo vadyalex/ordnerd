@@ -1,14 +1,15 @@
 (ns ordnerd.handler
-  (:require [compojure.core :refer :all]
+  (:require [clojure.string :as str]
+            [clojure.core.async :refer [go]]
+            [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            [ordnerd.dictionary.swedish :as swe]
             [cheshire.core :refer :all]
             [environ.core :refer [env]]
-            [clojure.pprint :refer [pprint]]
-            [clojure.string :as str]
             [clj-http.client :as client]
-            [clj-http.util :as util]))
+            [clj-http.util :as util]
+            [ordnerd.dictionary.swedish :as swe]
+            [ordnerd.markdown :as markdown]))
 
 (def webhook-uid
   (or (env :webhook) "WEBHOOK"))
@@ -27,29 +28,66 @@
         (format token chat-id url-encoded-text)
         (client/get {:throw-exceptions true})))))
 
-(defn telegram-answer-dont-know
-  [chat-id query]
+(defn lexeme->text
+  [lexeme]
   (let
-    [text (str "Jag tyvärr känner inte till det ordet: *" query "*")]
-    (telegram-send-message chat-id text)))
+    [definition-text (:definition lexeme)
+     usage-text (:usage lexeme)
+     example-text (if (contains? lexeme :example)
+                    (markdown/italic (get lexeme :examples))
+                    (->>
+                      (get lexeme :examples)
+                      (filter #(not (str/blank? %)))
+                      (map markdown/italic)
+                      (str/join \newline)))]
+    (str (if (str/blank? definition-text)
+           ""
+           (str \newline
+                "Betydelse:"
+                \newline
+                (markdown/bold definition-text)))
+         (if (str/blank? usage-text)
+           ""
+           (str \newline
+                "Användning:"
+                \newline
+                (markdown/italic usage-text)))
+         (if (str/blank? example-text)
+           ""
+           (str \newline
+                "Exempel:"
+                \newline
+                example-text)))))
 
-(defn word->markdown
+(defn word->text
   [word]
   (let
-    [form (:form word)
-     definition_1 (get-in word [:lexeme :definition])
-     definition_2 (get-in word [:lexeme 0 :definition])
-     definition (or definition_1 definition_2)]
-    (str \newline "*" form "*" \newline \newline "_" definition "_")))
+    [form-text (->
+                 (:form word)
+                 (.replaceAll "~" ""))
+     inflections-text (->>
+                        (:inflections word)
+                        (str/join " "))
+     lexemes-text (->>
+                    (:lexeme word)
+                    (map lexeme->text)
+                    (str/join \newline))]
+    (str \newline
+         (markdown/bold form-text)
+         \newline
+         (markdown/fixed inflections-text)
+         \newline
+         \newline
+         lexemes-text)))
 
-(defn telegram-answer-word
-  [chat-id text]
-  (telegram-send-message chat-id text))
+(defn dont-know-text
+  [query]
+  (str "Jag tyvärr känner inte till det ordet: " (markdown/bold query)))
 
 (defn webhook-endpoint
-  [update-json-str]
+  [update-event-json-str]
   (let
-    [update (parse-string update-json-str true)
+    [update (parse-string update-event-json-str true)
      message-id (get-in update [:message :message-id])
      chat-id (get-in update [:message :chat :id])
      message-text (get-in update [:message :text])
@@ -63,15 +101,11 @@
             query
             (swe/search)
             (first))
-     word-found? (some? word)
-     answer-message-text (word->markdown word)]
-    (println "INCOMING UPDATE" "-->")
-    (pprint update)
-    (if word-found?
-      (telegram-answer-word chat-id answer-message-text)
-      (telegram-answer-dont-know chat-id query))
-    {:status  202
-     :headers {"Content-Type" "application/json; charset=utf-8"}}))
+     text (if (some? word)
+            (word->text word)
+            (dont-know-text query))]
+    (println "INCOMING UPDATE" "-->" update)
+    (telegram-send-message chat-id text)))
 
 (defroutes app-routes
 
@@ -95,10 +129,15 @@
 
            (POST (str "/bot/telegram/" webhook-uid)
                  {body :body}
-             (webhook-endpoint (try
-                                 ;; if body is empty slurp will explode..
-                                 (slurp body)
-                                 (catch Exception e ""))))
+             (let
+               [payload (try
+                          (slurp body)
+                          (catch Exception e nil))]
+               (if (nil? payload)
+                 {:status  400 :headers {"Content-Type" "application/json; charset=utf-8"}}
+                 (do
+                   (go (webhook-endpoint payload))
+                   {:status  202 :headers {"Content-Type" "application/json; charset=utf-8"}}))))
 
            (route/not-found "NOWHERE TO BE FOUND"))
 
