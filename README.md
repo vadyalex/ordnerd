@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/vadyalex/ordnerd.svg?branch=master)](https://travis-ci.org/vadyalex/ordnerd)
 
+<img src="https://raw.githubusercontent.com/vadyalex/ordnerd/master/resources/public/logo/nerd_128.png">
+
 This is swedish vocabuvalery [Telegram bot](https://t.me/ordnerdbot).
 
 
