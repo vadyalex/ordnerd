@@ -1,5 +1,7 @@
 # ordnerd
 
+[![Build Status](https://travis-ci.org/vadyalex/ordnerd.svg?branch=master)](https://travis-ci.org/vadyalex/ordnerd)
+
 This is swedish vocabuvalery [Telegram bot](https://t.me/ordnerdbot).
 
 
