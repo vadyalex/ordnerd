@@ -4,10 +4,10 @@
             [cheshire.core :refer :all]))
 
 (def words
-  (let [lines (-> "dictionary_swedish.json"
-                  (io/resource)
-                  (slurp)
-                  (str/split-lines))]
+  (let [lines (some-> "dictionary_swedish.json"
+                      (io/resource)
+                      (slurp :encoding "utf-8")
+                      (str/split-lines))]
     (->>
       lines
       (map #(parse-string % true)))))
@@ -26,15 +26,20 @@
 (defn search
   "Returns all words matching query string."
   [query]
-    (->>
-      words
-      (filter #(is-inflection-contains? % query))
-      (into [])))
+  (->>
+    words
+    (filter #(is-inflection-contains? % query))
+    (into [])))
+
+(defn random
+  "Returns a random word from the dictionary."
+  []
+  (rand-nth words))
 
 ;(def load-words
 ;  (let [lines (-> "dictionary_swedish.json"
 ;                  (io/resource)
-;                  (slurp)
+;                  (slurp :encoding "utf-8")
 ;                  (str/split-lines))
 ;        is-not-blank? (fn [s] (not (str/blank? s)))
 ;        add-inflections #(let

@@ -28,7 +28,7 @@
         (format token chat-id url-encoded-text)
         (client/get {:throw-exceptions true})))))
 
-(defn lexeme->text
+(defn- lexeme->text
   [lexeme]
   (let
     [definition-text (:definition lexeme)
@@ -84,28 +84,42 @@
   [query]
   (str "Jag tyvärr känner inte till det ordet: " (markdown/bold query)))
 
+(defn greeting-text
+  [user-first-name]
+  (str "Hejsan"
+       (if (str/blank? user-first-name)
+         "! "
+         (str " " user-first-name "! "))
+       "Jag heter Ordnerd. Jag kan förklara ordets betydelse. Skriv bara ett ord och du få se!"))
+
 (defn webhook-endpoint
-  [update-event-json-str]
+  [update]
   (let
-    [update (parse-string update-event-json-str true)
-     message-id (get-in update [:message :message-id])
+    [message-id (get-in update [:message :message-id])
      chat-id (get-in update [:message :chat :id])
      message-text (get-in update [:message :text])
-     query (->
-             message-text
-             (or "")
-             (.toLowerCase)
-             (str/split #" ")
-             (first))
-     word (->
-            query
-            (swe/search)
-            (first))
-     text (if (some? word)
-            (word->text word)
-            (dont-know-text query))]
+     user-first-name (get-in update [:message :from :first_name])]
     (println "INCOMING UPDATE" "-->" update)
-    (telegram-send-message chat-id text)))
+    (case
+      message-text
+      "/start" (telegram-send-message chat-id (greeting-text user-first-name))
+      "/slumpa" (telegram-send-message chat-id (-> (swe/random) (word->text)))
+      (let
+        [query (->
+                 message-text
+                 (or "")
+                 (.toLowerCase)
+                 (str/split #" ")
+                 (first))
+         word (->
+                query
+                (swe/search)
+                (first))
+         text (if (some? word)
+                (word->text word)
+                (dont-know-text query))]
+        (telegram-send-message chat-id text)))
+    ))
 
 (defroutes app-routes
 
@@ -131,13 +145,15 @@
                  {body :body}
              (let
                [payload (try
-                          (slurp body)
+                          (-> body
+                              (slurp :encoding "utf-8")
+                              (parse-string true))
                           (catch Exception e nil))]
                (if (nil? payload)
-                 {:status  400 :headers {"Content-Type" "application/json; charset=utf-8"}}
+                 {:status 400 :headers {"Content-Type" "application/json; charset=utf-8"}}
                  (do
                    (go (webhook-endpoint payload))
-                   {:status  202 :headers {"Content-Type" "application/json; charset=utf-8"}}))))
+                   {:status 202 :headers {"Content-Type" "application/json; charset=utf-8"}}))))
 
            (route/not-found "NOWHERE TO BE FOUND"))
 

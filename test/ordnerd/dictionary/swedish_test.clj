@@ -35,4 +35,10 @@
       (is (= 1 (count result)))
       (is (= (get-in result [0 :form]) "binde~ord"))
       (is (= (get-in result [0 :lexeme 0 :definition]) "konjunktion"))))
+
+  (testing "test random word from dictionary"
+    (let [result (random)]
+      (pprint result)
+      (is (some? result))))
+
   )
