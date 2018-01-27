@@ -10,7 +10,7 @@ This is swedish vocabuvalery [Telegram bot](https://t.me/ordnerdbot).
 It knows thousands of words definitions, forms, usages with examples!
 
 
-For example, do you know what _schibalet_ means? No? Well then Ask [@Ordnerdbot](https://t.me/ordnerdbot).
+For example, do you know what _schibbolet_ means? No? Well then Ask [@Ordnerdbot](https://t.me/ordnerdbot).
 
 ## Credits
 
