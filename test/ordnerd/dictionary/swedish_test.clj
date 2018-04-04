@@ -5,7 +5,7 @@
 
 (deftest test-dictionary-swedish
 
-  (testing "find word: ab"
+  (testing "find word 'ab'"
     (let [query "ab"
           result (search query)]
       ;(pprint result)
@@ -40,5 +40,11 @@
     (let [result (random)]
       (pprint result)
       (is (some? result))))
+
+  (testing "find word 'sitt'"
+    (let [query "sitt"
+          result (search query)]
+      (pprint result)
+      (is (= 3 (count result)))))
 
   )

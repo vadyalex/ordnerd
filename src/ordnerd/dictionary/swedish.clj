@@ -12,23 +12,25 @@
       lines
       (map #(parse-string % true)))))
 
-(defn- is-inflection-contains?
+(defn inflections-match?
   "Check if word inflection forms contains query string ignoring case."
   [word query]
   (let
-    [q (->
-         query
-         (or "")
-         (.toLowerCase))
-     inflections (get word :inflections)]
-    (some #{q} inflections)))
+    [inflections (:inflections word)]
+    (->>
+      inflections
+      (filter some?)
+      (map #(.replaceAll % "!" ""))
+      (filter #(.equalsIgnoreCase % query))
+      (first)
+      (some?))))
 
 (defn search
   "Returns all words matching query string."
   [query]
   (->>
     words
-    (filter #(is-inflection-contains? % query))
+    (filter #(inflections-match? % query))
     (into [])))
 
 (defn random
