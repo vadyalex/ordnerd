@@ -28,54 +28,86 @@
         (format token chat-id url-encoded-text)
         (client/get {:throw-exceptions true})))))
 
+(defn- if-blank
+  "If s is nil, empty, or contains only whitespace evaluates then, if not, yields else"
+  ([^CharSequence s then]
+   (if-blank s then nil))
+  ([^CharSequence s then else]
+   (if (str/blank? s) then else)))
+
+(defn- blank-to-nil
+  "If s is nil, empty, or contains only whitespace return nil, if not, yields s"
+  [^CharSequence s]
+  (if-blank s nil s))
+
 (defn- lexeme->text
   [lexeme]
   (let
-    [definition-text (:definition lexeme)
-     usage-text (:usage lexeme)
-     example-text (if (contains? lexeme :example)
-                    (markdown/italic (get lexeme :examples))
-                    (->>
-                      (get lexeme :examples)
-                      (filter #(not (str/blank? %)))
-                      (map markdown/italic)
-                      (str/join \newline)))]
-    (str (if (str/blank? definition-text)
-           ""
-           (str \newline
-                "Betydelse:"
-                \newline
-                (markdown/bold definition-text)))
-         (if (str/blank? usage-text)
-           ""
-           (str \newline
-                "Användning:"
-                \newline
-                (markdown/italic usage-text)))
-         (if (str/blank? example-text)
-           ""
-           (str \newline
-                "Exempel:"
-                \newline
-                example-text)))))
+    [definition-text (if-some [definition (->
+                                            lexeme
+                                            (:definition)
+                                            (blank-to-nil))]
+                       (str \newline
+                            "Betydelse:"
+                            \newline
+                            (markdown/bold definition))
+                       "")
+
+     usage-text (if-some [usage (->
+                                  lexeme
+                                  (:usage)
+                                  (blank-to-nil))]
+                  (str \newline
+                       "Användning:"
+                       \newline
+                       (markdown/italic usage))
+                  "")
+
+     example (if-some [example (:example lexeme)]
+               (markdown/italic example)
+               (->>
+                 (:examples lexeme)
+                 (filter #(not (str/blank? %)))
+                 (map markdown/italic)
+                 (str/join \newline)))
+     example-text (if (str/blank? example)
+                    ""
+                    (str \newline
+                         "Exempel:"
+                         \newline
+                         example))]
+    (str definition-text
+         usage-text
+         example-text)))
 
 (defn word->text
   [word]
   (let
     [form-text (->
                  (:form word)
-                 (.replaceAll "~" ""))
+                 (.replaceAll "~" "")
+                 (markdown/bold))
+
+     pos-text (if-some [pos (:pos word)]
+                (->>
+                  (str "[" pos "]")
+                  (markdown/italic)
+                  (str " "))
+                "")
+
      inflections-text (->>
                         (:inflections word)
-                        (str/join " "))
+                        (str/join " ")
+                        (markdown/fixed))
+
      lexemes-text (->>
                     (:lexeme word)
                     (map lexeme->text)
                     (str/join \newline))]
     (str \newline
-         (markdown/bold form-text)
+         form-text pos-text
          \newline
-         (markdown/fixed inflections-text)
+         inflections-text
          \newline
          \newline
          lexemes-text)))
@@ -108,16 +140,16 @@
         [query (->
                  message-text
                  (or "")
-                 (.toLowerCase)
-                 (str/split #" ")
-                 (first))
-         word (->
-                query
-                (swe/search)
-                (first))
-         text (if (some? word)
-                (word->text word)
-                (dont-know-text query))]
+                 (.toLowerCase))
+         words (->
+                 query
+                 (swe/search))
+         text (if (empty? words)
+                (dont-know-text query)
+                (->>
+                  words
+                  (map word->text)
+                  (str/join \newline)))]
         (telegram-send-message chat-id text)))
     ))
 
