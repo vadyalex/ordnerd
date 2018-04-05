@@ -67,6 +67,13 @@
                  (.replaceAll "~" "")
                  (markdown/bold))
 
+     pos-text (if-some [pos (:pos word)]
+                (->>
+                  (str "[" pos "]")
+                  (markdown/italic)
+                  (str " "))
+                "")
+
      inflections-text (->>
                         (:inflections word)
                         (str/join " ")
@@ -77,7 +84,7 @@
                     (map lexeme->text)
                     (str/join \newline))]
     (str \newline
-         form-text
+         form-text pos-text
          \newline
          inflections-text
          \newline
