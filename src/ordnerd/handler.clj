@@ -31,33 +31,38 @@
 (defn- lexeme->text
   [lexeme]
   (let
-    [definition-text (:definition lexeme)
-     usage-text (:usage lexeme)
-     example-text (if (contains? lexeme :example)
-                    (markdown/italic (get lexeme :examples))
-                    (->>
-                      (get lexeme :examples)
-                      (filter #(not (str/blank? %)))
-                      (map markdown/italic)
-                      (str/join \newline)))]
-    (str (if (str/blank? definition-text)
-           ""
-           (str \newline
-                "Betydelse:"
-                \newline
-                (markdown/bold definition-text)))
-         (if (str/blank? usage-text)
-           ""
-           (str \newline
-                "Användning:"
-                \newline
-                (markdown/italic usage-text)))
-         (if (str/blank? example-text)
-           ""
-           (str \newline
-                "Exempel:"
-                \newline
-                example-text)))))
+    [definition (:definition lexeme)
+     definition-text (if (str/blank? definition)
+                       ""
+                       (str \newline
+                            "Betydelse:"
+                            \newline
+                            (markdown/bold definition)))
+
+     usage (:usage lexeme)
+     usage-text (if (str/blank? usage)
+                  ""
+                  (str \newline
+                       "Användning:"
+                       \newline
+                       (markdown/italic usage)))
+
+     example (if (contains? lexeme :example)
+               (markdown/italic (:example lexeme))
+               (->>
+                 (:examples lexeme)
+                 (filter #(not (str/blank? %)))
+                 (map markdown/italic)
+                 (str/join \newline)))
+     example-text (if (str/blank? example)
+                    ""
+                    (str \newline
+                         "Exempel:"
+                         \newline
+                         example))]
+    (str definition-text
+         usage-text
+         example-text)))
 
 (defn word->text
   [word]
