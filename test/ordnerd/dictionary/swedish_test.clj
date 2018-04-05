@@ -38,13 +38,26 @@
 
   (testing "test random word from dictionary"
     (let [result (random)]
-      (pprint result)
+      ;(pprint result)
       (is (some? result))))
 
   (testing "find word 'sitt'"
     (let [query "sitt"
           result (search query)]
-      (pprint result)
+      ;(pprint result)
       (is (= 3 (count result)))))
+
+  (testing "find word 'ger sig'"
+    (let [query "ger sig"
+          result (search query)]
+      (pprint result)
+      (is (= 1 (count result)))))
+
+  (testing "find word 'ger sig'"
+    (let [query "ge sig"
+          result (search query)]
+      ; TODO implement different inflections
+      (pprint result)
+      (is (= 0 (count result)))))
 
   )

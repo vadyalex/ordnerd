@@ -28,27 +28,43 @@
         (format token chat-id url-encoded-text)
         (client/get {:throw-exceptions true})))))
 
+(defn- if-blank
+  "If s is nil, empty, or contains only whitespace evaluates then, if not, yields else"
+  ([^CharSequence s then]
+   (if-blank s then nil))
+  ([^CharSequence s then else]
+   (if (str/blank? s) then else)))
+
+(defn- blank-to-nil
+  "If s is nil, empty, or contains only whitespace return nil, if not, yields s"
+  [^CharSequence s]
+  (if-blank s nil s))
+
 (defn- lexeme->text
   [lexeme]
   (let
-    [definition (:definition lexeme)
-     definition-text (if (str/blank? definition)
-                       ""
+    [definition-text (if-some [definition (->
+                                            lexeme
+                                            (:definition)
+                                            (blank-to-nil))]
                        (str \newline
                             "Betydelse:"
                             \newline
-                            (markdown/bold definition)))
+                            (markdown/bold definition))
+                       "")
 
-     usage (:usage lexeme)
-     usage-text (if (str/blank? usage)
-                  ""
+     usage-text (if-some [usage (->
+                                  lexeme
+                                  (:usage)
+                                  (blank-to-nil))]
                   (str \newline
                        "Användning:"
                        \newline
-                       (markdown/italic usage)))
+                       (markdown/italic usage))
+                  "")
 
-     example (if (contains? lexeme :example)
-               (markdown/italic (:example lexeme))
+     example (if-some [example (:example lexeme)]
+               (markdown/italic example)
                (->>
                  (:examples lexeme)
                  (filter #(not (str/blank? %)))
@@ -124,9 +140,7 @@
         [query (->
                  message-text
                  (or "")
-                 (.toLowerCase)
-                 (str/split #" ")
-                 (first))
+                 (.toLowerCase))
          words (->
                  query
                  (swe/search))
