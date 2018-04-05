@@ -64,18 +64,22 @@
   (let
     [form-text (->
                  (:form word)
-                 (.replaceAll "~" ""))
+                 (.replaceAll "~" "")
+                 (markdown/bold))
+
      inflections-text (->>
                         (:inflections word)
-                        (str/join " "))
+                        (str/join " ")
+                        (markdown/fixed))
+
      lexemes-text (->>
                     (:lexeme word)
                     (map lexeme->text)
                     (str/join \newline))]
     (str \newline
-         (markdown/bold form-text)
+         form-text
          \newline
-         (markdown/fixed inflections-text)
+         inflections-text
          \newline
          \newline
          lexemes-text)))
@@ -111,13 +115,15 @@
                  (.toLowerCase)
                  (str/split #" ")
                  (first))
-         word (->
-                query
-                (swe/search)
-                (first))
-         text (if (some? word)
-                (word->text word)
-                (dont-know-text query))]
+         words (->
+                 query
+                 (swe/search))
+         text (if (empty? words)
+                (dont-know-text query)
+                (->>
+                  words
+                  (map word->text)
+                  (str/join \newline)))]
         (telegram-send-message chat-id text)))
     ))
 

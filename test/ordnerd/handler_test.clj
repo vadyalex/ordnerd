@@ -71,7 +71,7 @@
            (Thread/sleep 2000)
            (is (= (:status response) 202))))
 
-       (testing "Telegram webhook - ord"
+       (testing "Telegram webhook - sitt"
          (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
                            (mock/json-body {
                                             "update_id" 123
@@ -93,7 +93,7 @@
                                                                        "type"       "private"
                                                                        }
                                                          "date"       1516570408
-                                                         "text"       "ord"
+                                                         "text"       "sitt"
                                                          }
                                             }))
                response (app request)]
