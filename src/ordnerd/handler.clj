@@ -9,7 +9,9 @@
             [clj-http.client :as client]
             [clj-http.util :as util]
             [ordnerd.dictionary.swedish :as swe]
-            [ordnerd.markdown :as markdown]))
+            [ordnerd.markdown :as markdown]
+            [ordnerd.stats :as stats]
+            ))
 
 (def webhook-uid
   (or (env :webhook) "WEBHOOK"))
@@ -151,7 +153,9 @@
                              query
                              (swe/search))
                      text (if (empty? words)
-                            (dont-know-text query)
+                            (do
+                              (stats/publish-event-zerohits-async query)
+                              (dont-know-text query))
                             (->>
                               words
                               (map word->text)
