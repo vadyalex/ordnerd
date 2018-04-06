@@ -196,6 +196,32 @@
            (Thread/sleep 2000)
            (is (= (:status response) 202))))
 
+       (testing "Telegram webhook - no text message"
+         (let [request (-> (mock/request :post "/bot/telegram/WEBHOOK")
+                           (mock/json-body {
+                                            "update_id" 494609584,
+                                            "message"   {
+                                                         "message_id" 1235
+                                                         "from"       {
+                                                                       "id"            986413
+                                                                       "is_bot"        false
+                                                                       "first_name"    "Bond"
+                                                                       "username"      "jamesbond"
+                                                                       "language_code" "en-US"
+                                                                       }
+                                                         "chat"       {
+                                                                       "id"         986413
+                                                                       "first_name" "Bond"
+                                                                       "username"   "jamesbond"
+                                                                       "type"       "private"
+                                                                       }
+                                                         "date"       1517082121
+                                                         }
+                                            }))
+               response (app request)]
+           (Thread/sleep 2000)
+           (is (= (:status response) 202))))
+
        )
     )
   )

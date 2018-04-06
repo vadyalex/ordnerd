@@ -116,6 +116,9 @@
   [query]
   (str "Jag tyvärr känner inte till det ordet: " (markdown/bold query)))
 
+(def no-message-text
+  (str "Jag tyvärr ser ingen text meddelande. \uD83D\uDE14"))
+
 (defn greeting-text
   [user-first-name]
   (str "Hejsan"
@@ -132,26 +135,28 @@
      message-text (get-in update [:message :text])
      user-first-name (get-in update [:message :from :first_name])]
     (println "INCOMING UPDATE" "-->" update)
-    (case
-      message-text
-      "/start" (telegram-send-message chat-id (greeting-text user-first-name))
-      "/slumpa" (telegram-send-message chat-id (-> (swe/random) (word->text)))
-      (let
-        [query (->
-                 message-text
-                 (or "")
-                 (.toLowerCase))
-         words (->
-                 query
-                 (swe/search))
-         text (if (empty? words)
-                (dont-know-text query)
-                (->>
-                  words
-                  (map word->text)
-                  (str/join \newline)))]
-        (telegram-send-message chat-id text)))
-    ))
+    (if-blank message-text
+              (telegram-send-message chat-id no-message-text)
+              (do
+                (case
+                  message-text
+                  "/start" (telegram-send-message chat-id (greeting-text user-first-name))
+                  "/slumpa" (telegram-send-message chat-id (-> (swe/random) (word->text)))
+                  (let
+                    [query (->
+                             message-text
+                             (or "")
+                             (.toLowerCase))
+                     words (->
+                             query
+                             (swe/search))
+                     text (if (empty? words)
+                            (dont-know-text query)
+                            (->>
+                              words
+                              (map word->text)
+                              (str/join \newline)))]
+                    (telegram-send-message chat-id text)))))))
 
 (defroutes app-routes
 
