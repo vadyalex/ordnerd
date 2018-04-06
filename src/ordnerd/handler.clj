@@ -137,7 +137,7 @@
      message-text (get-in update [:message :text])
      user-first-name (get-in update [:message :from :first_name])]
     (println "INCOMING UPDATE" "-->" update)
-    (if-blank message-text
+    (if (str/blank? message-text)
               (telegram-send-message chat-id no-message-text)
               (do
                 (case
