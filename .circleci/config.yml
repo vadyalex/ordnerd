@@ -42,7 +42,7 @@ jobs:
       - run: lein test
 
 
-  push:
+  push-master:
     docker:
       - image: circleci/clojure:lein-2.7.1
 
@@ -57,7 +57,44 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "project.clj" }}
 
-      - run: lein uberjar
+      - setup_remote_docker
+
+      - run:
+          name: Login to Docker Hub
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - run:
+          name: Build uberjar
+          command: lein uberjar
+
+      - run:
+          name: Build Docker Container
+          command: docker build -t vadyalex/ordnerd:master .
+
+      - run:
+          name: Tag latest
+          command: docker tag vadyalex/ordnerd:master
+
+      - run:
+          name: Push to Docker Hub
+          command: |
+            docker push vadyalex/ordnerd:master
+
+
+  push-release:
+    docker:
+      - image: circleci/clojure:lein-2.7.1
+
+    environment:
+      LEIN_ROOT: "true"
+      JVM_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "project.clj" }}
 
       - setup_remote_docker
 
@@ -66,17 +103,22 @@ jobs:
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
       - run:
+          name: Build uberjar
+          command: lein uberjar
+
+      - run:
           name: Build Docker Container
           command: docker build -t vadyalex/ordnerd:${CIRCLE_TAG} .
 
       - run:
           name: Tag latest
-          command: docker tag vadyalex/ordnerd:${CIRCLE_TAG} vadyalex/ordnerd:latest
+          command: docker tag vadyalex/ordnerd:${CIRCLE_TAG} vadyalex/ordnerd:master vadyalex/ordnerd:latest
 
       - run:
           name: Push to Docker Hub
           command: |
             docker push vadyalex/ordnerd:${CIRCLE_TAG}
+            docker push vadyalex/ordnerd:master
             docker push vadyalex/ordnerd:latest
 
 
@@ -94,7 +136,15 @@ workflows:
           filters:
             tags:
               only: /v?[0-9]+(\.[0-9]+)*/
-      - push:
+      - push-master:
+          requires:
+            - test
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
+      - push-release:
           requires:
             - test
           filters:
