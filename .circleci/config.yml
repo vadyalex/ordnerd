@@ -7,7 +7,6 @@ jobs:
       - image: circleci/clojure:lein-2.7.1
 
     environment:
-      LEIN_ROOT: "true"
       JVM_OPTS: -Xmx3200m
 
     steps:
@@ -29,7 +28,6 @@ jobs:
       - image: circleci/clojure:lein-2.7.1
 
     environment:
-      LEIN_ROOT: "true"
       JVM_OPTS: -Xmx3200m
 
     steps:
@@ -47,7 +45,6 @@ jobs:
       - image: circleci/clojure:lein-2.7.1
 
     environment:
-      LEIN_ROOT: "true"
       JVM_OPTS: -Xmx3200m
 
     steps:
@@ -56,6 +53,8 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "project.clj" }}
+
+      - setup_remote_docker
 
       - run:
           name: Login to Docker Hub
@@ -84,7 +83,6 @@ jobs:
       - image: circleci/clojure:lein-2.7.1
 
     environment:
-      LEIN_ROOT: "true"
       JVM_OPTS: -Xmx3200m
 
     steps:
@@ -93,6 +91,8 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "project.clj" }}
+
+      - setup_remote_docker
 
       - run:
           name: Login to Docker Hub
