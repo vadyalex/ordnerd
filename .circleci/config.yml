@@ -72,6 +72,14 @@ jobs:
           name: Push to Docker Hub
           command: docker push vadyalex/ordnerd:master
 
+#      -  add_ssh_keys
+#
+#      - run:
+#          name: Deploy
+#          command: |
+#            ssh-keyscan ${DEPLOY_HOST} 2>/dev/null >> ~/.ssh/known_hosts
+#            ssh ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" < .circleci/deploy.sh master ${TELEGRAM_WEBHOOK} ${TELEGRAM_TOKEN}
+
 
   push-release-deploy:
     docker:
@@ -116,9 +124,13 @@ jobs:
             docker push vadyalex/ordnerd:master
             docker push vadyalex/ordnerd:latest
 
+      -  add_ssh_keys
+
       - run:
           name: Deploy
-          command: ssh ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" < .circleci/deploy.sh ${CIRCLE_TAG} ${WEBHOOK} ${TOKEN}
+          command: |
+            ssh-keyscan ${DEPLOY_HOST} 2>/dev/null >> ~/.ssh/known_hosts
+            ssh ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" < .circleci/deploy.sh ${CIRCLE_TAG} ${TELEGRAM_WEBHOOK} ${TELEGRAM_TOKEN}
 
 
 workflows:
