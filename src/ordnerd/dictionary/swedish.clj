@@ -4,7 +4,7 @@
             [cheshire.core :refer :all]))
 
 (def words
-  (let [lines (some-> "dictionary_swedish.json"
+  (let [lines (some-> "dictionary_swedish.jsonl"
                       (io/resource)
                       (slurp :encoding "utf-8")
                       (str/split-lines))]
@@ -39,7 +39,7 @@
   (rand-nth words))
 
 ;(def load-words
-;  (let [lines (-> "dictionary_swedish.json"
+;  (let [lines (-> "dictionary_swedish.jsonl"
 ;                  (io/resource)
 ;                  (slurp :encoding "utf-8")
 ;                  (str/split-lines))
