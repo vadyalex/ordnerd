@@ -69,13 +69,8 @@ jobs:
           command: docker build -t vadyalex/ordnerd:master .
 
       - run:
-          name: Tag latest
-          command: docker tag vadyalex/ordnerd:master
-
-      - run:
           name: Push to Docker Hub
-          command: |
-            docker push vadyalex/ordnerd:master
+          command: docker push vadyalex/ordnerd:master
 
 
   push-release:
@@ -108,7 +103,11 @@ jobs:
 
       - run:
           name: Tag latest
-          command: docker tag vadyalex/ordnerd:${CIRCLE_TAG} vadyalex/ordnerd:master vadyalex/ordnerd:latest
+          command: docker tag vadyalex/ordnerd:${CIRCLE_TAG} vadyalex/ordnerd:latest
+
+      - run:
+          name: Tag master
+          command: docker tag vadyalex/ordnerd:${CIRCLE_TAG} vadyalex/ordnerd:master
 
       - run:
           name: Push to Docker Hub
