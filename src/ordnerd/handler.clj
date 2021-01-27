@@ -154,7 +154,7 @@
                              (swe/search))
                      text (if (empty? words)
                             (do
-                              (stats/publish-event-zerohits-async query)
+                              ;(stats/publish-event-zerohits-async query)
                               (dont-know-text query))
                             (->>
                               words

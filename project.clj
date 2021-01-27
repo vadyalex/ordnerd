@@ -19,7 +19,8 @@
                  [clj-http "3.1.0"]
                  [environ "1.1.0"]
                  [ch.qos.logback/logback-classic "1.1.7"]
-                 [com.taoensso/carmine "2.18.0"]]
+                 ;[com.taoensso/carmine "2.18.0"]
+                 ]
 
   :uberjar-name "ordnerd.jar"
   :main ordnerd.core
