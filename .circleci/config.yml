@@ -73,7 +73,7 @@ jobs:
           command: docker push vadyalex/ordnerd:master
 
 
-  push-release:
+  push-release-deploy:
     docker:
       - image: circleci/clojure:lein-2.7.1
 
@@ -116,10 +116,14 @@ jobs:
             docker push vadyalex/ordnerd:master
             docker push vadyalex/ordnerd:latest
 
+      - run:
+          name: Deploy
+          command: ssh ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" < .circleci/deploy.sh ${CIRCLE_TAG} ${WEBHOOK} ${TOKEN}
+
 
 workflows:
   version: 2
-  build-test-push:
+  build_test_push_and_deploy:
     jobs:
       - build:
           filters:
@@ -139,7 +143,7 @@ workflows:
               ignore: /.*/
             branches:
               only: master
-      - push-release:
+      - push-release-deploy:
           requires:
             - test
           filters:
