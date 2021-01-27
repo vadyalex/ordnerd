@@ -2,7 +2,7 @@ FROM java:8-alpine
 
 WORKDIR /ordnerd
 
-COPY target/uberjar/ordnerd.jar /ordnerd/ordnerd.jar
+COPY target/ordnerd.jar /ordnerd/ordnerd.jar
 
 ENV PORT 5000
 
