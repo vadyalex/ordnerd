@@ -1,6 +1,6 @@
 # ordnerd
 
-[![Build Status](https://travis-ci.org/vadyalex/ordnerd.svg?branch=master)](https://travis-ci.org/vadyalex/ordnerd)
+[![CircleCI](https://circleci.com/gh/vadyalex/ordnerd.svg?style=svg)](https://circleci.com/gh/vadyalex/ordnerd)
 
 <img src="https://raw.githubusercontent.com/vadyalex/ordnerd/master/resources/public/logo/nerd_128.png">
 
