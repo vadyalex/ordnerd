@@ -9,6 +9,8 @@ if [ -z "$(docker service ls | grep ordnerd)" ]; then
 
   docker service create                                                         \
     --name 'ordnerd'                                                            \
+    --replicas 2                                                                \
+    --update-delay 10s                                                          \
     --env PORT=5000                                                             \
     --env WEBHOOK=${WEBHOOK}                                                    \
     --env TOKEN=${TOKEN}                                                        \
@@ -26,7 +28,7 @@ if [ -z "$(docker service ls | grep ordnerd)" ]; then
 else
   echo "Updating ordnerd using ${TAG}";
 
-  docker service update --image "vadyalex/ordnerd:${TAG}" "ordnerd"
+  docker service update --replicas 2 --update-delay 10s --image "vadyalex/ordnerd:${TAG}" 'ordnerd'
 
   echo 'Done!';
 fi
