@@ -50,27 +50,16 @@
   (testing "find word 'ger sig'"
     (let [query "ger sig"
           result (search query)]
-      (pprint result)
       (is (= 1 (count result)))))
 
   (testing "find word 'ger sig'"
     (let [query "ge sig"
           result (search query)]
-      ; TODO implement different inflections
-      (pprint result)
       (is (= 0 (count result)))))
 
   (testing "find word 'ger sig'"
     (let [query "ge sig"
-          result (search query)]
-      ; TODO implement different inflections
+          result (search query :fuzzy)]
+      (println "\"ge sig\" -> " )
       (pprint result)
-      (is (= 0 (count result)))))
-
-  )
-
-(let [query "ge"
-      result (search query)]
-  ; TODO implement different inflections
-  (pprint result)
-  (is (= 0 (count result))))
+      (is (= 5 (count result))))))  

@@ -151,7 +151,7 @@
                              (.toLowerCase))
                      words (->
                              query
-                             (swe/search))
+                             (swe/search :fuzzy))
                      text (if (empty? words)
                             (do
                               ;(stats/publish-event-zerohits-async query)
