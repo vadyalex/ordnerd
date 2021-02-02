@@ -4,9 +4,9 @@
 
   :url "https://github.com/vadyalex/ordnerd"
 
-  :min-lein-version "2.0.0"
+  :min-lein-version "2.8.0"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/core.async "0.4.474"]
