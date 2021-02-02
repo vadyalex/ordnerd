@@ -40,6 +40,35 @@ jobs:
       - run: lein test
 
 
+  package:
+    docker:
+      - image: circleci/clojure:lein-2.8.1
+
+    environment:
+      JVM_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "project.clj" }}
+
+      - setup_remote_docker
+
+      - run:
+          name: Login to Docker Hub
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - run:
+          name: Build uberjar
+          command: lein uberjar
+
+      - run:
+          name: Build Docker Container
+          command: docker build -t vadyalex/ordnerd:local .
+
+          
   push-master:
     docker:
       - image: circleci/clojure:lein-2.8.1
@@ -71,14 +100,6 @@ jobs:
       - run:
           name: Push to Docker Hub
           command: docker push vadyalex/ordnerd:master
-
-#      -  add_ssh_keys
-#
-#      - run:
-#          name: Deploy
-#          command: |
-#            ssh-keyscan ${DEPLOY_HOST} 2>/dev/null >> ~/.ssh/known_hosts
-#            ssh ${DEPLOY_USER}@${DEPLOY_HOST} "bash -s" < .circleci/deploy.sh master ${TELEGRAM_WEBHOOK} ${TELEGRAM_TOKEN}
 
 
   push-release-deploy:
@@ -147,9 +168,15 @@ workflows:
           filters:
             tags:
               only: /v?[0-9]+(\.[0-9]+)*/
-      - push-master:
+      - package:
           requires:
             - test
+          filters:
+            tags:
+              only: /v?[0-9]+(\.[0-9]+)*/
+      - push-master:
+          requires:
+            - package
           filters:
             tags:
               ignore: /.*/
@@ -157,7 +184,7 @@ workflows:
               only: master
       - push-release-deploy:
           requires:
-            - test
+            - package
           filters:
             tags:
               only: /v?[0-9]+(\.[0-9]+)*/
