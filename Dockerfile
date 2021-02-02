@@ -1,4 +1,4 @@
-FROM java:11-alpine
+FROM openjdk:11-alpine
 
 WORKDIR /ordnerd
 
