@@ -6,22 +6,21 @@
 
   :min-lein-version "2.0.0"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/data.json "0.2.6"]
-                 [org.clojure/tools.logging "0.3.1"]
-                 [org.clojure/core.async "0.4.474"]
-                 [compojure "1.5.0"]
-                 [cheshire "5.8.0"]
-                 [ring-server "0.4.0"]
-                 [ring/ring-defaults "0.2.0"]
-                 [ring/ring-mock "0.3.2"]
-                 [http-kit "2.2.0"]
-                 [clj-http "3.1.0"]
-                 [environ "1.1.0"]
-                 [ch.qos.logback/logback-classic "1.1.7"]
+  :dependencies [[org.clojure/clojure "1.10.2"]
+                 [org.clojure/data.json "1.0.0"]
+                 [org.clojure/tools.logging "1.1.0"]
+                 [org.clojure/core.async "1.3.610"]
+                 [compojure "1.6.2"]
+                 [cheshire "5.10.0"]
+                 [ring-server "0.5.0"]
+                 [ring/ring-defaults "0.3.2"]
+                 [ring/ring-mock "0.4.0"]
+                 [http-kit "2.5.1"]
+                 [clj-http "3.12.1"]
+                 [environ "1.2.0"]
+                 [ch.qos.logback/logback-classic "1.3.0-alpha5"]
                  ;[com.taoensso/carmine "2.18.0"]
-                 [clj-fuzzy "0.4.1"]
-                 ]
+                 [clj-fuzzy "0.4.1"]]
 
   :uberjar-name "ordnerd.jar"
   :main ordnerd.core
