@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-slim
+FROM gcr.io/distroless/java:11
 
 WORKDIR /ordnerd
 
@@ -8,4 +8,4 @@ ENV PORT 5000
 
 EXPOSE 5000
 
-CMD ["java", "-jar", "ordnerd.jar"]
+CMD ["ordnerd.jar"]
