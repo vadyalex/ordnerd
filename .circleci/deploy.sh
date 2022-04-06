@@ -8,8 +8,9 @@ if [ -z "$(docker service ls | grep ordnerd)" ]; then
   echo "Service ordnerd does not exist! Create using ${TAG} image..";
 
   docker service create                                                             \
+    --limit-memory 512m                                                             \
     --name 'ordnerd'                                                                \
-    --replicas 2                                                                    \
+    --replicas 1                                                                    \
     --update-delay 10s                                                              \
     --env PORT=5000                                                                 \
     --env WEBHOOK=${WEBHOOK}                                                        \
@@ -32,7 +33,7 @@ if [ -z "$(docker service ls | grep ordnerd)" ]; then
 else
   echo "Updating ordnerd using ${TAG}";
 
-  docker service update --replicas 2 --update-delay 10s --image "vadyalex/ordnerd:${TAG}" 'ordnerd'
+  docker service update --limit-memory 512m --replicas 1 --update-delay 10s --image "vadyalex/ordnerd:${TAG}" 'ordnerd'
 
   echo 'Done!';
 fi
